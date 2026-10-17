@@ -29,10 +29,10 @@ input{padding:12px;font-size:18px;border-radius:6px;border:1px solid #5560b0;bac
 const $=i=>document.getElementById(i),cv=$('cv'),ctx=cv.getContext('2d'),W=960,H=420,OUT='#10101c';
 const GR=['E','D','C','B','A','S','SS','SSS','R','SR','SSR','L','LL','LLL','M'],NG=GR.length,GC=['#9aa0a6','#6bd36b','#4fa3ff','#b56bff','#ff9f43','#ff5252','#ff4fd8','#ffe14d'];
 const col=g=>g<8?GC[g]:g==8?`hsl(${(T*150)%360},90%,60%)`:`hsl(${(T*(220+(g-8)*50)+g*47)%360},100%,${g>=12?72:62}%)`;
-const WA=[.1,.25,.6,1.5,4,12,40,150,600,2400,10000,40000,150000,600000,2500000],GA=[.05,.1,.2,.4,.8,1.6,3,6,12,20,32,50,80,120,200],PA=[.05,.1,.25,.6,1.5,4,12,40,150,600,2500,10000,40000,150000,600000],PG=[.05,.1,.15,.3,.6,1.2,2.5,5,10,16,25,40,60,90,150];
+const WA=[.1,.25,.6,1.5,4,12,40,150,600,2400,10000,40000,150000,600000,2500000],GA=[.1,.25,.6,1.5,4,12,40,150,600,2400,10000,40000,150000,600000,2500000],PA=[.05,.1,.25,.6,1.5,4,12,40,150,600,2500,10000,40000,150000,600000],PG=[.05,.1,.15,.3,.6,1.2,2.5,5,10,16,25,40,60,90,150];
 const TY={w:{n:'무기',i:'⚔️',c:100,nm:['나무검','철검','강철검','마법검','성검','용검','신검','천검','무한검','별빛검','은하검','우주검','차원검','창세검','만물검']},a:{n:'갑옷',i:'🛡️',c:100,nm:['천옷','가죽옷','사슬옷','판금갑','미스릴갑','용린갑','성기사갑','천상갑','무한갑','별빛갑','은하갑','우주갑','차원갑','창세갑','만물갑']},p:{n:'펫',i:'🐾',c:100,nm:['아기슬라임','새끼늑대','불여우','서리호랑이','번개매','현자올빼미','그림자용','황금봉황','시간수호룡','별빛유니콘','은하고래','우주불사조','차원마수','창세신룡','만물의왕']}};
 const PT=[[50000,28000,14000,6000,1900,100],[45000,28000,15000,7500,3500,900,100],[40000,27000,16000,9000,5000,2000,900,100],[35000,26000,17000,10000,7000,3500,1200,290,10],[30000,25000,18000,11000,8000,5000,2000,800,190,10],[26000,24000,18000,12000,9000,6000,3500,1000,400,90,10],[22100,22000,18000,13000,10000,7000,4500,2000,1000,300,90,10],[20000,20000,18000,14000,11000,8000,5000,2500,1000,350,120,25,5],[18100,18000,17000,14000,12000,9000,6000,3500,1500,500,250,120,25,5],[16000,16000,16000,14000,12000,10000,7000,4500,2500,1000,500,300,150,45,5]].map(r=>r.concat(Array(NG-r.length).fill(0)));
-const CODES={OPEN:{gems:100},HUNTER:{gems:50,gold:500},GOLD:{gold:5000},나쓰찐따:{gems:5000},나쓰고트:{gems:5000}};
+const CODES={OPEN:{gems:100},HUNTER:{gems:50,gold:500},GOLD:{gold:5000}};
 const PRE=['불꽃','서리','독','그림자','번개','대지','바람','암흑','빛','피의','강철','유령','늪지','용암','폭풍','저주받은','고대','광폭한','황금','심연의'];
 const MN=['슬라임','젤리','고블린','도적','해골전사','뼈병사','오크','전투오크','임프','불꽃임프','골렘','바위거인'];
 const fmt=n=>{if(n<1e4)return Math.floor(n).toLocaleString();let u=['','만','억','조','경','해'],i=0;while(n>=1e4&&i<5){n/=1e4;i++}return n.toFixed(n<100?2:1)+u[i]};
@@ -95,7 +95,7 @@ const flo=(x,y,t,c,sz=18)=>ft.push({x,y,t,c,sz,a:0});
 function hit(){let m=q[0];if(!m)return;let tv=tvOn()&&Math.random()*100<tvP(),c=tv||Math.random()*100<cc(),d=atk()*(c?cd()/100:1)*(tv?tvD()/100:1);m.hp-=d;m.hit=.15;shake=Math.max(shake,tv?24:c?10:2);if(tv){tvFl=.6;sfx('tv')}else sfx(c?'crit':'atk');
 flo(m.b?560:440,330-HT[m.t]*SC[m.t]*m.sz-30,(tv?'📺 ':c?'💥':'')+fmt(d),tv?'#ff4fd8':c?'#ffd34d':'#fff',tv?36:c?26:18);if(tv)flo(480,150,'📺 민수민수티비!!','#ff4fd8',28);if(m.hp<=0)kill(m)}
 function kill(m){let g=gpk()*(m.b?10:1);S.gold+=g;S.kills++;flo(440,250,'+'+fmt(g)+'G','#ffd34d',16);sfx('kill');gh.push({x:m.b?560:440,sz:SC[m.t]*m.sz*.7,hue:m.hue,t:0});
-if(m.b){let gem=30+2*S.bw;S.bw++;if(S.bw%5==0)gem+=50;S.gems+=gem;S.stage++;S.sk=0;mode='n';q=[];fill();sfx('win');toast('보스 처치! 💎+'+gem+' → '+S.stage+'단계')}
+if(m.b){let gem=100;S.bw++;S.gems+=gem;S.stage++;S.sk=0;mode='n';q=[];fill();sfx('win');toast('보스 처치! 💎+'+gem+' → '+S.stage+'단계')}
 else{S.sk=Math.min(10,S.sk+1);q.shift();q.push(mk());slide=120}}
 function startBoss(){if(S.sk<10||mode=='b')return;mode='b';bt=bmax=30;q=[mk(true)];bossShock=3;sfx('boss');lastTick=99}
 function bossFail(){mode='n';q=[];fill();sfx('lose');toast('보스 도전 실패…')}
@@ -254,7 +254,7 @@ fill();let lt=performance.now();(function loop(n){let dt=Math.min(.1,(n-lt)/1000
 // UI
 function hud(){$('st').textContent='🏰 '+S.stage+'단계';$('gd').textContent='💰 '+fmt(S.gold);$('gm').textContent='💎 '+fmt(S.gems);$('kl').textContent='☠ '+fmt(S.kills);$('at').textContent='⚔ '+fmt(atk());
 let r=300-(Date.now()-S.free)/1000;$('fr').textContent=r<=0?'🎁 받기':'🎁 '+Math.floor(r/60)+':'+String(Math.floor(r%60)).padStart(2,'0');$('boss').style.display=(S.sk>=10&&mode=='n')?'block':'none'}
-function free(){ainit();if(Date.now()-S.free<3e5)return;S.free=Date.now();S.gems+=20;sfx('click');toast('무료 보상 💎+20');R()}
+function free(){ainit();if(Date.now()-S.free<3e5)return;S.free=Date.now();S.gems+=100;sfx('click');toast('무료 보상 💎+100');R()}
 function openP(p){ainit();sfx('click');P=P==p?'':p;R()}
 const pc=v=>(v*100).toLocaleString()+'%';
 const stT=(t,g)=>t=='w'?'공격력 +'+pc(WA[g]):t=='a'?'골드 +'+pc(GA[g]):'공격력 +'+pc(PA[g])+' 골드 +'+pc(PG[g]);
@@ -264,8 +264,10 @@ function pull(t,n){ainit();let c=TY[t].c*(n==10?10:1);if(S.gems<c)return;S.gems-
 $('mdc').innerHTML='<div class="grid res" style="grid-template-columns:repeat('+(res.length>1?5:1)+',1fr)">'+res.map(g=>`<div class="it" style="border-color:${col(g)};color:${col(g)};box-shadow:0 0 ${6+g*3}px ${col(g)}"><div style="font-size:38px;filter:drop-shadow(0 0 8px ${col(g)})">${TY[t].i}</div><b>${GR[g]}</b><br>${TY[t].nm[g]}<br>${stT(t,g)}</div>`).join('')+'</div>'+(lu?'<p style="color:#ffd34d;font-size:20px;margin:8px 0 0">🎉 '+TY[t].n+' 뽑기 레벨 UP! Lv.'+lvl(t)+'</p>':'')+'<p><button class="b" onclick="mod()">확인</button></p>';$('md').style.display='flex';R()}
 function eq(t,g){S.eq[t]=S.eq[t]==g?-1:g;sfx('click');R()}
 function merge(t,g){if(S.inv[t][g]<5||g>=NG-1)return;S.inv[t][g]-=5;S.inv[t][g+1]++;if(S.eq[t]==g&&S.inv[t][g]<1)S.eq[t]=-1;sfx('win');toast('합성 성공! '+GR[g+1]+'급 '+TY[t].nm[g+1]);R()}
+function mergeAll(t){const a=S.inv[t],can=()=>a.some((v,g)=>v>=5&&g<NG-1);if(!can())return;const had=S.eq[t];let made=0;for(let g=0;g<NG-1;g++){const n=Math.floor(a[g]/5);if(n){a[g]-=n*5;a[g+1]+=n;made+=n}}
+if(had>=0&&a[had]<1){let b=-1;for(let g=NG-1;g>=0;g--)if(a[g]>0){b=g;break}S.eq[t]=b}sfx('win');toast('모두 합성 완료! '+TY[t].n+' 합성 '+made+'회');R()}
 function up(k){const pl=plan(k,BUYN);if(!pl.room||!pl.n||S.gold<pl.cost)return;const was=tvOn();S.gold-=pl.cost;S.up[k]+=pl.n;sfx('click');if(!was&&tvOn()){sfx('tv');toast('📺 민수민수티비 해금! 치명타 확률 100% 달성')}R()}
-function eqList(t){let h=`<h4>${TY[t].i} ${TY[t].n}</h4>`,any=0;for(let g=NG-1;g>=0;g--){let n=S.inv[t][g];if(!n)continue;any=1;h+=`<div class="row"><span style="color:${col(g)}"><b>${GR[g]}</b> ${TY[t].nm[g]} ×${n}<br><small>${stT(t,g)}</small></span><span><button class="b" onclick="eq('${t}',${g})">${S.eq[t]==g?'해제 ✓':'장착'}</button> <button class="b" ${n>=5&&g<NG-1?'':'disabled'} onclick="merge('${t}',${g})">합성</button></span></div>`}return h+(any?'':'<p>보유 없음</p>')}
+function eqList(t){let h=`<h4>${TY[t].i} ${TY[t].n} <button class="b" ${S.inv[t].some((v,g)=>v>=5&&g<NG-1)?'':'disabled'} onclick="mergeAll('${t}')">모두 합성</button></h4>`,any=0;for(let g=NG-1;g>=0;g--){let n=S.inv[t][g];if(!n)continue;any=1;h+=`<div class="row"><span style="color:${col(g)}"><b>${GR[g]}</b> ${TY[t].nm[g]} ×${n}<br><small>${stT(t,g)}</small></span><span><button class="b" onclick="eq('${t}',${g})">${S.eq[t]==g?'해제 ✓':'장착'}</button> <button class="b" ${n>=5&&g<NG-1?'':'disabled'} onclick="merge('${t}',${g})">합성</button></span></div>`}return h+(any?'':'<p>보유 없음</p>')}
 function R(){let p=$('panel'),h='';if(!P){p.style.display='none';return}p.style.display='block';
 if(P=='g'){h='<h3>🎰 뽑기</h3>';for(const k in TY){const c=TY[k].c,L=lvl(k),mx=L>=PT.length,cur=S.pd[k]-cum(L);h+=`<div class="row" style="flex-wrap:wrap"><span><b>${TY[k].i} ${TY[k].n}</b> Lv.${L}<br><small>${mx?'MAX 레벨':'다음 레벨까지 '+cur+' / '+100*L+'회'}</small></span><span><button class="b" ${S.gems>=c?'':'disabled'} onclick="pull('${k}',1)">1회 💎${c}</button> <button class="b" ${S.gems>=c*10?'':'disabled'} onclick="pull('${k}',10)">10+1회 💎${c*10}</button></span></div>`}
 h+='<p><small>10+1회 = 10회 비용으로 11개 지급 (레벨 경험치는 10회분)</small></p><h4>확률표 '+Object.keys(TY).map(k=>`<button class="b" style="${GT===k?'background:#5560b0;border-color:#ffd34d':''}" onclick="GT='${k}';R()">${TY[k].n}</button>`).join(' ')+'</h4><p><small>'+TY[GT].n+' Lv.'+lvl(GT)+'</small></p>'+ptab(GT).map((v,g)=>`<div style="color:${col(g)}">${GR[g]}: ${v?(v/1000).toFixed(3)+'%':'🔒'}</div>`).join('')}
@@ -274,7 +276,7 @@ const rows=[['a','기본 공격력','Lv.'+S.up.a+' (기본 '+(10+S.up.a*5)+')','
 if(tvOn())rows.push(['m','📺 민수민수티비 확률',tvP().toFixed(1)+'%'+(tvP()>=50?' (최대)':''),'+0.1%p'],['n','📺 민수민수티비 피해','치명타 피해 ×'+(tvD()/100).toFixed(2),'+0.25배']);
 for(const[k,n,v,nx]of rows){const pl=plan(k,BUYN),ok=pl.room>0&&pl.n>0&&S.gold>=pl.cost;h+=`<div class="row"><span><b>${n}</b> ${v}<br><small>다음 ${nx}</small></span><button class="b" ${ok?'':'disabled'} onclick="up('${k}')">${pl.room?'💰'+fmt(pl.cost)+(pl.n>1?' (+'+pl.n+')':''):'최대'}</button></div>`}
 if(!tvOn())h+='<div class="row" style="opacity:.6"><span><b>📺 민수민수티비</b> 🔒<br><small>치명타 확률 100% 달성 시 해금 — 치명타보다 강한 특수 타격</small></span></div>'}
-else if(P=='e')h='<h3>⚔️ 장비</h3>'+eqList('w')+eqList('a')+eqList('p')+'<p><small>같은 등급 5개 → 한 단계 위 1개 (M 제외)</small></p>';
+else if(P=='e')h='<h3>⚔️ 장비</h3>'+eqList('w')+eqList('a')+eqList('p')+'<p><small>같은 등급 5개 → 한 단계 위 1개 (M 제외) · 모두 합성은 무기/갑옷/펫 따로 적용</small></p>';
 else h='<h3>🐾 펫</h3>'+eqList('p');
 if(p.h!==h){p.h=h;p.innerHTML=h}}
 // ===== 온라인 랭킹 (Firebase Realtime Database REST) =====
