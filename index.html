@@ -21,11 +21,13 @@ body{display:flex;flex-direction:column}
 .it{border:2px solid;border-radius:12px;padding:12px 6px;text-align:center;font-size:15px;background:#0d1230}
 input{padding:12px;font-size:18px;border-radius:6px;border:1px solid #5560b0;background:#0d1020;color:#fff}input[type=range]{padding:0;width:min(260px,45vw);vertical-align:middle;accent-color:#7580d8}.res .it{padding:6px 2px;font-size:12px}.res .it b{font-size:13px}#mx{position:absolute;top:6px;right:6px;z-index:3}
 #gift{display:none;position:absolute;z-index:2;font-size:38px;padding:8px 14px;animation:gf .8s infinite alternate}@keyframes gf{to{transform:translateY(-10px) scale(1.12)}}
+#notice{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;padding:4px 8px;font-size:13px;background:#1d2250 center/cover no-repeat;border-bottom:1px solid #3a4290;text-shadow:0 1px 2px #000,0 0 5px #000}#notice .b{padding:3px 8px;font-size:12px;text-shadow:none}#notice.c>*:not(#nt){display:none}#notice.c{padding:2px 8px}#ntx{flex:1 1 auto;min-width:0}
 </style></head><body>
 <div id="top"><b id="st"></b><span id="gd"></span><span id="gm"></span><span id="kl"></span><span id="at"></span><span id="bf" style="color:#9ff"></span><span id="sv" style="opacity:.7"></span>
 <button onclick="mod('set')">⚙</button><button onclick="mod('cp')">🎟</button><button onclick="mod('rk')">🏆</button><button id="fr" onclick="free()">🎁</button></div>
+<div id="notice"><span id="ntx"></span><button class="b" onclick="ncopy()">복사</button><button class="b" id="nu" onclick="useDaily()">사용</button><input type="file" id="nf" accept="image/*" style="display:none" onchange="nbPick(this)"><button class="b" onclick="$('nf').click()">🖼 배경</button><button class="b" onclick="nbReset()">↺</button><button class="b" id="nt" onclick="nTog()">▲</button></div>
 <div id="stage"><canvas id="cv" width="960" height="420"></canvas><button class="b" id="boss" onclick="bossBtn()">👹 보스 도전</button><button class="b" id="gift" onclick="openGift()">🎁</button><div id="toast"></div><div id="panel"></div><div class="modal" id="md"><button class="b" id="mx" onclick="mod()">✕ 닫기</button><div id="mdc"></div></div></div>
-<div id="menu"><button onclick="openP('g')"><b>🎰</b>뽑기</button><button onclick="openP('s')"><b>📈</b>능력치</button><button onclick="openP('e')"><b>⚔️</b>장비</button><button onclick="openP('p')"><b>🐾</b>펫</button><button onclick="openP('c')"><b>🏰</b>컨텐츠</button><button id="mxb" onclick="openP('x')"><b>📖</b>도감</button><button onclick="openP('r')"><b>🔄</b>환생</button></div>
+<div id="menu"><button onclick="openP('g')"><b>🎰</b>뽑기</button><button onclick="openP('s')"><b>📈</b>능력치</button><button onclick="openP('e')"><b>⚔️</b>장비</button><button onclick="openP('p')"><b>🐾</b>펫</button><button onclick="openP('c')"><b>🏰</b>컨텐츠</button><button id="mxb" onclick="openP('x')"><b>📖</b>도감</button><button onclick="mod('gd')"><b>🛡</b>길드</button><button onclick="openP('r')"><b>🔄</b>환생</button></div>
 <script>
 const $=i=>document.getElementById(i),cv=$('cv'),ctx=cv.getContext('2d'),W=960,H=420,OUT='#10101c';
 const GR=['E','D','C','B','A','S','SS','SSS','R','SR','SSR','L','LL','LLL','M'],NG=GR.length,GC=['#9aa0a6','#6bd36b','#4fa3ff','#b56bff','#ff9f43','#ff5252','#ff4fd8','#ffe14d'];
@@ -47,9 +49,11 @@ let e=r.eq&&r.eq[t];d.eq[t]=(e>=0&&e<NG&&d.inv[t][e]>0)?e:-1}
 if(!Array.isArray(d.cp))d.cp=[]}}catch(e){d=def()}return d}
 let S=load(),T=0,mode='n',q=[],bt=30,bmax=30,slide=0,atkT=9,pT=0,shake=0,sc=0,shT=0,lastClick=0,P='',ft=[],gh=[],bossShock=0,lastTick=99,tvFl=0;
 // ===== 확장 컨텐츠: 상태 =====
-const defX=()=>({so:0,rb:0,best:1,tw:0,dc:0,rr:0,gs:0,cb:0,hc:0,hu:0,en:{w:Array(NG).fill(0),a:Array(NG).fill(0),p:Array(NG).fill(0)},mk:Array(13).fill(0),cx:[0,0,0],ac:[],dg:{d:0,e:[0,0,0,0]}});
+var GRD=[['새싹','🌱',0],['브론즈','🥉',1],['실버','🥈',3],['골드','🥇',6],['플래티넘','💠',10],['다이아','💎',20],['마스터','🔮',35],['그랜드마스터','👑',50],['전설','🌟',100]];
+const defX=()=>({so:0,sp:0,gc:0,sh:[0,0,0,0],rb:0,best:1,tw:0,dc:0,rr:0,gs:0,cb:0,hc:0,hu:0,en:{w:Array(NG).fill(0),a:Array(NG).fill(0),p:Array(NG).fill(0)},mk:Array(13).fill(0),cx:[0,0,0],ac:[],dg:{d:0,e:[0,0,0,0]}});
 function fixX(){const d=defX(),r=S.x&&typeof S.x=='object'?S.x:{},n=v=>isFinite(v)&&v>=0?Math.floor(v):0;
-for(const k of['so','rb','tw','dc','rr','gs','cb','hc','hu'])d[k]=n(r[k]);
+for(const k of['so','sp','gc','rb','tw','dc','rr','gs','cb','hc','hu'])d[k]=n(r[k]);
+d.sh=[0,1,2,3].map(i=>Math.min([50,50,20,20][i],n(r.sh&&r.sh[i])));
 for(const k of['h','j'])S.up[k]=Math.min(k=='h'?580:1e9,n(S.up[k]));
 d.best=Math.max(1,n(r.best),S.stage|0);
 for(const t of'wap'){const a=r.en&&r.en[t];if(Array.isArray(a))d.en[t]=Array.from({length:NG},(_,i)=>Math.min(15,n(a[i])))}
@@ -65,11 +69,11 @@ const enM=(t,g)=>{const l=S.x.en[t][g]|0;return 1+.1*Math.min(l,10)+.2*Math.max(
 const eb=(t,A)=>{const g=S.eq[t];return g>=0?A[g]*enM(t,g):0};
 const setM=()=>{const e=S.eq;if(e.w<0||e.a<0||e.p<0)return 1;return(1+.05*(Math.min(e.w,e.a,e.p)+1))*(e.w==e.a&&e.a==e.p?1.5:1)};
 const hhOn=()=>tvOn()&&tvP()>=10,hhP=()=>Math.min(30,1+.05*S.up.h),hhD=()=>5000+500*S.up.j;
-const xm=()=>(1+.05*S.x.so)*(1+.01*CXN)*setM();
+const xm=()=>(1+.05*(S.x.so+S.x.sp))*(1+.01*CXN)*setM()*gradeM()*gldM();
 
-const atk=()=>Math.floor((10+S.up.a*5)*(1+eb('w',WA))*(1+eb('p',PA))*xm()*(bfx.a>0?2:1));
+const atk=()=>Math.floor((10+S.up.a*5)*(1+eb('w',WA))*(1+eb('p',PA))*xm()*(1+.2*S.x.sh[0])*(bfx.a>0?2:1));
 const cc=()=>Math.min(100,5+S.up.c*.5),cd=()=>150+10*S.up.d,iv=()=>Math.max(.25,1-.02*S.up.s),tvOn=()=>cc()>=100,tvP=()=>Math.min(50,1+.1*S.up.m),tvD=()=>300+25*S.up.n;
-const gmul=()=>(1+eb('a',GA))*(1+eb('p',PG))*xm()*(bfx.g>0?2:1);const ivB=()=>iv()/(bfx.s>0?1.5:1);
+const gmul=()=>(1+eb('a',GA))*(1+eb('p',PG))*xm()*(1+.2*S.x.sh[1])*(bfx.g>0?2:1);const ivB=()=>iv()/(bfx.s>0?1.5:1);
 const gpk=()=>6*1.16**(S.stage-1)*gmul();
 const UP={a:{b:15,r:1.18,mx:1e9},d:{b:25,r:1.22,mx:1e9},c:{b:80,r:1.1,mx:190},s:{b:80,r:1.35,mx:38},m:{b:2e11,r:1.2,mx:490},n:{b:1e11,r:1.18,mx:1e9},h:{b:1e15,r:1.2,mx:580},j:{b:1e15,r:1.18,mx:1e9}};let BUYN=1,GT='w';
 function plan(k,w){const u=UP[k],lv=S.up[k],room=Math.max(0,u.mx-lv);let n=0,cost=0;
@@ -397,7 +401,7 @@ function mod(k){ainit();let m=$('md'),c=$('mdc');c.dataset.k=k||'';if(!k){m.styl
 if(k=='cp')c.innerHTML='<h3>🎟 쿠폰</h3><input id="ci" placeholder="코드 입력"> <button class="b" onclick="coupon()">확인</button> <button class="b" onclick="mod()">닫기</button>';
 if(k=='set')c.innerHTML=`<h3>⚙ 설정</h3><p>닉네임 <b>${esc(nick())}</b><br><input id="ni" maxlength="10" placeholder="새 닉네임 (2~10자)"> <button class="b" onclick="chNick()">변경</button><br><small>${nkMsg()}</small></p>${cloudHtml()}<p>🎵 배경음악 <input type="range" min="0" max="100" value="${Math.round(S.bgm*100)}" oninput="setVol('bgm',this.value)"> <b id="bgmv">${Math.round(S.bgm*100)}%</b><br>🔊 효과음 <input type="range" min="0" max="100" value="${Math.round(S.sfx*100)}" oninput="setVol('sfx',this.value)" onchange="sfx('click')"> <b id="sfxv">${Math.round(S.sfx*100)}%</b></p><p>🎵 유튜브 배경음악 <small id="ytst">(${YTON&&ytOk?'재생 중':YTON?'불러오는 중':'기본 음악 사용 중'})</small><br><input id="yu" placeholder="유튜브 링크 붙여넣기" style="width:100%;box-sizing:border-box"><br><button class="b" onclick="ytSet()">적용 (무한 반복)</button> <button class="b" onclick="ytReset()">기본 음악으로 초기화</button><br><small>영상·재생목록 링크 모두 가능해요. 퍼가기가 막힌 영상은 재생되지 않을 수 있어요.</small></p><p>🔊 사용자 효과음 <small>(${SB?'적용 중':'기본 효과음 사용 중'})</small><br><input id="su" placeholder="mp3/wav 직접 링크 붙여넣기" style="width:100%;box-sizing:border-box"><br><button class="b" onclick="sfxSetUrl()">링크 적용</button> <input type="file" id="sf" accept="audio/*" style="display:none" onchange="sfxPick(this)"><button class="b" onclick="$('sf').click()">파일로 고르기</button> <button class="b" onclick="sfxReset()">기본 효과음으로 초기화</button><br><small>모든 효과음이 이 소리 하나로 바뀌고, 상황별로 음높이만 달라져요. 유튜브 링크는 효과음으로 못 써요.</small></p><p><small>📅 매일 0시(한국시간)에 보석 3,000개 자동 지급 · 오늘 ${S.daily===DAYN()?'받음 ✓':'대기 중'}<br>접속하지 않은 날의 보상은 쌓이지 않습니다.</small></p><p>📷 주인공 사진<br><input type="file" id="hf" accept="image/*" style="display:none" onchange="heroPick(this)"><button class="b" onclick="$('hf').click()">내 사진 업로드</button> <button class="b" onclick="heroReset()">기본으로</button><br><small>갤러리에서 고른 사진이 그대로 주인공이 됩니다. (배경이 투명한 PNG를 쓰면 가장 깔끔해요) 사진은 이 기기에만 저장돼요.</small></p><p><button class="b" onclick="save();toast('저장 완료')">수동 저장</button> <button class="b" id="rs" onclick="reset(this)">초기화</button></p><button class="b" onclick="mod()">닫기</button>`;
 if(k=='rk'){c.innerHTML='<h3>🏆 랭킹</h3><p>불러오는 중…</p>';rkShow()}if(k=='res')c.innerHTML=RESH}
-function coupon(){let v=$('ci').value.trim().toUpperCase(),r=CODES[v];if(!r)return toast('없는 코드입니다');if(S.cp.includes(v))return toast('이미 사용한 코드입니다');S.cp.push(v);S.gems+=r.gems||0;S.gold+=r.gold||0;sfx('win');toast('쿠폰 지급 완료!');mod()}
+function coupon(){let v=$('ci').value.trim().toUpperCase(),r=CODES[v];if(dcTry($('ci').value))return;if(!r)return toast('없는 코드입니다');if(S.cp.includes(v))return toast('이미 사용한 코드입니다');S.cp.push(v);S.gems+=r.gems||0;S.gold+=r.gold||0;sfx('win');toast('쿠폰 지급 완료!');mod()}
 let rt=0;function reset(b){if(!rt){b.textContent='한 번 더 누르면 초기화';rt=setTimeout(()=>{rt=0;b.textContent='초기화'},3000)}else{localStorage.removeItem('mh2');{const dd=S.daily;S=def();S.daily=dd;fixX();CXN=0}q=[];mode='n';fill();rt=0;mod();toast('초기화 완료')}}
 const DAYN=()=>Math.floor((Date.now()+324e5)/864e5);
 function daily(){const d=DAYN();if(S.daily===d)return;S.daily=d;S.gems+=3000;toast('📅 일일 보상 💎+3,000 (매일 0시 지급)')}
@@ -480,10 +484,9 @@ else if(XT=='i'){for(let i=0;i<3;i++){const t='wap'[i];h+=`<h4>${TY[t].i} ${TY[t
 else{const un=ACH.filter(achOk).length;h+=`<p><button class="b" ${un?'':'disabled'} onclick="claimAll()">모두 받기 (${un})</button></p>`;ACH.forEach((a,i)=>{const done=S.x.ac.includes(i),v=a.f(),ok=!done&&v>=a.g,lbl=a.l.replace('{n}',fmt(a.g)).replace('{g}',GR[a.g]||'');h+=`<div class="row" style="${done?'opacity:.45':''}"><span><b>${lbl}</b><br><small>${a.l.includes('{g}')?'':fmt(Math.min(v,a.g))+' / '+fmt(a.g)+' · '}💎 ${a.r}</small></span><button class="b" ${ok?'':'disabled'} onclick="claim(${i})">${done?'완료 ✓':'받기'}</button></div>`})}
 return h}
 // 환생
-const rbGain=()=>Math.max(0,Math.floor(S.stage/2)-5);
+const rbGain=()=>Math.floor(Math.max(0,Math.floor(S.stage/2)-5)*(1+.1*S.x.sh[3]));
 function rebirth(){if(S.stage<20||mode!='n')return;if(!RBC){RBC=setTimeout(()=>{RBC=0;R()},3000);R();return}clearTimeout(RBC);RBC=0;const g=rbGain();S.x.so+=g;S.x.rb++;S.x.best=Math.max(S.x.best,S.stage);
-S.stage=Math.max(1,Math.floor(S.x.best*.3));S.sk=0;S.gold=0;S.up={a:0,d:0,c:0,s:0,m:0,n:0,h:0,j:0};q=[];mode='n';fill();sfx('win');toast('🔄 환생! 영혼석 +'+g+' → '+S.stage+'단계에서 시작');save();R()}
-function rebirthH(){const g=rbGain(),ok=S.stage>=20&&mode=='n';return `<h3>🔄 환생</h3><p>환생하면 <b>단계·골드·능력치 강화</b>가 초기화되고 <b>영혼석</b>을 얻어요.<br>영혼석 1개당 공격력·골드 <b>+5%</b> (영구).<br>보석·장비·뽑기 레벨·강화·도감·업적·탑 기록은 그대로예요.<br>환생 후엔 최고 단계의 30% 지점에서 다시 시작해요.</p><div class="row"><span>현재 <b>${S.stage}</b>단계 · 최고 <b>${bst()}</b>단계 · 환생 ${S.x.rb}회<br>보유 영혼석 <b>${S.x.so}</b>개 (공격력·골드 +${S.x.so*5}%)</span></div><div class="row"><span>지금 환생하면 영혼석 <b style="color:#ffd34d">+${g}</b><br><small>20단계부터 가능 · 획득량 = 단계÷2 − 5</small></span><button class="b" ${ok?'':'disabled'} onclick="rebirth()">${RBC?'정말 환생! (한 번 더)':'환생하기'}</button></div><p><small>총 보너스: 영혼석 ×${(1+.05*S.x.so).toFixed(2)} · 도감 ×${(1+.01*CXN).toFixed(2)} · 세트 ×${setM().toFixed(2)}</small></p>`}
+S.stage=Math.max(1,Math.floor(S.x.best*startPct()));S.sk=0;S.gold=0;S.up={a:0,d:0,c:0,s:0,m:0,n:0,h:0,j:0};q=[];mode='n';fill();sfx('win');toast('🔄 환생! 영혼석 +'+g+' → '+S.stage+'단계에서 시작');save();R()}
 // 강화/각성
 const enCost=(g,l)=>Math.round(20*(l+1)*(1+g*.3));
 function enRow(t){const g=S.eq[t];if(g<0)return '';const lv=S.x.en[t][g],mx=lv>=15,need=lv>=10?3:1,have=Math.max(0,S.inv[t][g]-1),cost=enCost(g,lv),rate=lv<5?100:lv<10?70:40,ok=!mx&&have>=need&&S.gems>=cost;
@@ -495,4 +498,103 @@ function EXT(p){return p=='c'?contentH():p=='x'?codexH():p=='r'?rebirthH():''}
 
 setInterval(()=>{if(T>2)daily();cxUpdate();hud();badge();R()},300);cxUpdate();hud();
 (()=>{let el=Math.min((Date.now()-S.last)/1000,7200);if(el>60){let g=el*.2*gpk();S.gold+=g;setTimeout(()=>toast('오프라인 보상 💰'+fmt(g)),500)}})();
+
+// ===== v4: 환생(상점+등급) · 주인공 말풍선 · 상단 공지/자동 쿠폰 · 온라인 길드 =====
+// ---------- 환생: 등급 + 영혼 상점 ----------
+var RT='r';
+function gradeI(){let i=0;GRD.forEach((g,j)=>{if(S.x.rb>=g[2])i=j});return i}
+function gradeM(){return 1+.15*gradeI()}
+function startPct(){return Math.min(.7,.3+.02*S.x.sh[2])}
+const SHP=[['⚔️','영혼의 검','공격력 +20% / Lv',50,l=>5+3*l],['💰','영혼의 금화','골드 +20% / Lv',50,l=>5+3*l],['🚪','도약의 문','환생 후 시작 단계 +2%p / Lv (기본 30% → 최대 70%)',20,l=>10+5*l],['🔮','영혼 증폭','영혼석 획득량 +10% / Lv',20,l=>10+5*l]];
+function shopBuy(i){const lv=S.x.sh[i],s=SHP[i];if(lv>=s[3])return;const c=s[4](lv);if(S.x.so<c)return;S.x.so-=c;S.x.sp+=c;S.x.sh[i]++;sfx('click');save();R()}
+function rebirthH(){const tabs='<p>'+[['r','🔄 환생'],['s','🛒 영혼 상점'],['g','🏅 환생 등급']].map(([k,l])=>tabB(k,l,'RT',RT)).join(' ')+'</p>',g=rbGain(),ok=S.stage>=20&&mode=='n',gi=gradeI(),G=GRD[gi],nx=GRD[gi+1];
+const tot=`<p><small>총 보너스: 영혼석 ×${(1+.05*(S.x.so+S.x.sp)).toFixed(2)} · 등급 ×${gradeM().toFixed(2)} · 도감 ×${(1+.01*CXN).toFixed(2)} · 세트 ×${setM().toFixed(2)} · 길드 ×${gldM().toFixed(2)}</small></p>`;
+let h='<h3>🔄 환생</h3>'+tabs;
+if(RT=='s'){h+=`<p>보유 영혼석 <b style="color:#ffd34d">${S.x.so}</b>개 <small>(상점에서 써도 누적 보너스 +5%/개는 그대로 유지돼요)</small></p>`+SHP.map((s,i)=>{const lv=S.x.sh[i],mx=lv>=s[3],c=mx?0:s[4](lv);return `<div class="row"><span>${s[0]} <b>${s[1]}</b> Lv.${lv}/${s[3]}<br><small>${s[2]}</small></span><button class="b" ${!mx&&S.x.so>=c?'':'disabled'} onclick="shopBuy(${i})">${mx?'최대':'🔮'+c}</button></div>`}).join('')}
+else if(RT=='g'){h+=`<p>현재 등급 <b style="font-size:22px">${G[1]} ${G[0]}</b> · 환생 ${S.x.rb}회<br>공격력·골드 ×${gradeM().toFixed(2)}${nx?`<br><small>다음 등급 ${nx[1]} ${nx[0]}까지 환생 ${nx[2]-S.x.rb}회 남음</small>`:'<br><small>최고 등급입니다!</small>'}</p>`+GRD.map((x,i)=>`<div class="row" style="${i==gi?'background:#2c3370;':i>gi?'opacity:.55;':''}"><span>${x[1]} <b>${x[0]}</b> <small>환생 ${x[2]}회~</small></span><span>×${(1+.15*i).toFixed(2)}</span></div>`).join('')}
+else{h+=`<p>환생하면 <b>단계·골드·능력치 강화</b>가 초기화되고 <b>영혼석</b>을 얻어요.<br>영혼석 1개(누적)당 공격력·골드 <b>+5%</b>, 환생할수록 <b>등급</b>이 올라 보너스가 커져요. 영혼석은 <b>🛒 영혼 상점</b>에서 쓸 수 있어요.<br>보석·장비·뽑기 레벨·강화·도감·업적·탑 기록은 그대로예요.<br>환생 후엔 최고 단계의 <b>${Math.round(startPct()*100)}%</b> 지점에서 다시 시작해요.</p><div class="row"><span>현재 <b>${S.stage}</b>단계 · 최고 <b>${bst()}</b>단계 · 환생 ${S.x.rb}회<br>등급 ${G[1]} ${G[0]} · 영혼석 <b>${S.x.so}</b>개 (누적 +${(S.x.so+S.x.sp)*5}%)</span></div><div class="row"><span>지금 환생하면 영혼석 <b style="color:#ffd34d">+${g}</b><br><small>20단계부터 가능 · 획득량 = 단계÷2 − 5${S.x.sh[3]?' (× '+(1+.1*S.x.sh[3]).toFixed(1)+')':''}</small></span><button class="b" ${ok?'':'disabled'} onclick="rebirth()">${RBC?'정말 환생! (한 번 더)':'환생하기'}</button></div>`}
+return h+tot}
+
+// ---------- 주인공 말풍선 ----------
+var SAY=null,LS=S.stage,idleT=0,lowS=0;
+const LN={kill:['가볍네!','다음!','이 정도쯤이야','한 방이면 충분해','순조롭군'],idle:['오늘도 사냥 중…','슬슬 배고픈데','보석 모아서 뽑기나 해볼까?','장비 합성할 때가 됐나?','더 강해지고 싶어!','쿠폰은 챙겼나?'],crit:['급소다!','치명타!','제대로 들어갔다!'],tv:['민수민수티비 간다!','콤보 이어가자!'],hh:['흐물흐물~ 녹아라!','이게 최강이다!'],pull:['뭐가 나올까?','제발 좋은 거!'],good:['오, 괜찮은데?','이건 쓸 만하겠어!'],jack:['대박!! 이거 실화냐?!','심장이 쿵쾅거려!'],stage:['다음 단계로!','점점 강해지고 있어','좋아, 계속 가자!'],gift:['오, 선물이다!','럭키!'],coupon:['쿠폰이다! 💎','공짜 보석 최고!'],boss:['보스다… 긴장되네','여기서 끝낸다!','각오해라!'],low:['시간이 없어!','서둘러야 해!'],fail:['젠장, 다시 하자','조금만 더 강했다면…','다음엔 꼭 이긴다'],bossWin:['해냈다!','보스도 별거 아니군'],rebirth:['다시 처음부터… 더 강해져서!','영혼석, 힘을 빌려줘!'],gold:['황금이다!! 골드 폭탄!']};
+const PR={kill:1,idle:1,crit:2,pull:2,tv:2,hh:3,good:3,stage:3,gift:3,coupon:3,gold:3,jack:4,boss:4,low:4,fail:4,bossWin:4,rebirth:5};
+function say(k,f){const a=LN[k];if(!a)return;const p=PR[k]||1;if(!f&&SAY&&p<=SAY.p)return;SAY={t:a[Math.random()*a.length|0],l:2.8,p}}
+function bubble(){if(!SAY)return;const c=ctx;c.save();c.font='bold 17px sans-serif';c.textAlign='center';c.textBaseline='middle';const t=SAY.t,w=Math.ceil(c.measureText(t).width)+30,h=34,bx=Math.max(6,Math.min(W-w-6,170-w/2)),by=92,r=14;
+c.globalAlpha=Math.max(0,Math.min(1,SAY.l*4,(2.8-SAY.l)*6+.2));c.fillStyle='#fff';c.strokeStyle='#222';c.lineWidth=3;
+c.beginPath();c.moveTo(bx+r,by);c.arcTo(bx+w,by,bx+w,by+h,r);c.arcTo(bx+w,by+h,bx,by+h,r);c.arcTo(bx,by+h,bx,by,r);c.arcTo(bx,by,bx+w,by,r);c.closePath();c.fill();c.stroke();
+c.beginPath();c.moveTo(152,by+h);c.lineTo(166,by+h+17);c.lineTo(182,by+h);c.fill();c.stroke();c.fillRect(154,by+h-3,27,5);
+c.fillStyle='#111';c.fillText(t,bx+w/2,by+h/2+1);c.restore()}
+{const _u=update;update=function(dt){_u(dt);if(SAY){SAY.l-=dt;if(SAY.l<=0)SAY=null}
+if(S.stage>LS)say('stage');LS=S.stage;
+idleT+=dt;if(idleT>16){idleT=0;if(mode=='n'&&!SAY&&Math.random()<.7)say('idle')}
+if(mode=='b'||mode=='c'){if(bt<8&&!lowS){lowS=1;say('low')}}else lowS=0;
+if(atkT===0&&shake>=10&&!(tvFl>0)&&!(hhFl>0)&&Math.random()<.3)say('crit')}}
+{const _d=draw;draw=function(){_d();bubble()}}
+{const _k=kill;kill=function(m){_k(m);if(!m)return;if(m.au)say('gold');else if(m.b)say('bossWin');else if(Math.random()<.06)say('kill')}}
+{const _s=startBoss;startBoss=function(){_s();if(mode=='b')say('boss',1)}}
+{const _s=bossFail;bossFail=function(){_s();say('fail',1)}}
+{const _s=cStart;cStart=function(k,o){_s(k,o);if(mode=='c')say('boss',1)}}
+{const _s=gsfx;gsfx=function(g){_s(g);say(g>=8?'jack':g>=5?'good':'pull')}}
+{const _s=openGift;openGift=function(){_s();say('gift')}}
+{const _s=tvBurst;tvBurst=function(){_s();say('tv')}}
+{const _s=hhFx;hhFx=function(){_s();say('hh')}}
+{const _rb=rebirth;rebirth=function(){const r0=S.x.rb,g0=gradeI();_rb();if(S.x.rb>r0){say('rebirth',1);if(gradeI()>g0)setTimeout(()=>toast('🏅 환생 등급 상승! '+GRD[gradeI()][1]+' '+GRD[gradeI()][0],3000),1900)}}}
+
+// ---------- 상단 공지창 + 자동 쿠폰 (매일 오전 6시 / 오후 6시, 한국시간) ----------
+// 오전 6시 쿠폰: 06:00~17:59 / 오후 6시 쿠폰: 18:00~다음날 05:59 (항상 쿠폰 1개만 유효)
+const DCM=['상쾌한 아침','굿모닝 사냥꾼','아침해 쨍쨍','모닝 보석 한잔','일어나라 사냥꾼','오늘도 출근','새벽을 넘어서','든든한 아침밥'],
+DCE=['퇴근 후 한판','저녁노을 사냥','야식은 보석으로','달빛 사냥꾼','별빛 한 줌','굿나잇 보석','오늘도 수고했어','밤샘 파티'];
+const NBK='mh_nbg',NCK='mh_nc',dcN=i=>{const A=i%2?DCE:DCM;return A[(Math.floor(i/2)*3)%A.length]},dcNorm=s=>String(s).replace(/\s+/g,'').toUpperCase(),dcKey=i=>'DC'+i;
+function dcCur(){const t=Date.now()+324e5,i=Math.floor((t-216e5)/432e5);return{i,mo:i%2==0,name:dcN(i),end:(i+1)*432e5+216e5-324e5}}
+function useDaily(){const d=dcCur(),key=dcKey(d.i);if(S.cp.includes(key))return toast('이미 사용한 쿠폰입니다');S.cp=S.cp.filter(x=>!/^DC\d+$/.test(x)||+x.slice(2)>d.i-8);S.cp.push(key);S.gems+=5000;sfx('win');toast('🎟 「'+d.name+'」 쿠폰 💎+5,000');say('coupon');ntUpd();hud();if($('md').style.display=='flex'&&$('mdc').dataset.k=='cp')mod()}
+function dcTry(raw){const n=dcNorm(raw),d=dcCur();if(n==dcNorm(d.name)){useDaily();return true}if(n==dcNorm(dcN(d.i-1))||n==dcNorm(dcN(d.i-2))){toast('기간이 지난 쿠폰입니다');return true}return false}
+function ntUpd(){const e=$('ntx');if(!e)return;const d=dcCur(),s=Math.max(0,Math.floor((d.end-Date.now())/1e3)),p=n=>String(n).padStart(2,'0'),used=S.cp.includes(dcKey(d.i));
+e.innerHTML=`📢 <b>${d.mo?'🌅 오전 6시':'🌙 오후 6시'} 쿠폰</b> 「<b style="color:#ffd34d">${d.name}</b>」 💎5,000 · ${used?'<span style="color:#9f9">사용 완료 ✓</span>':'⏳ '+p(Math.floor(s/3600))+':'+p(Math.floor(s%3600/60))+':'+p(s%60)+' <small>('+(d.mo?'오후':'다음날 오전')+' 5:59까지)</small>'}`;$('nu').disabled=used}
+function ncopy(){const n=dcCur().name;try{navigator.clipboard.writeText(n).then(()=>toast('쿠폰 이름 복사됨'),()=>toast(n))}catch(e){toast(n)}}
+function nbApply(){try{const v=localStorage.getItem(NBK);$('notice').style.backgroundImage=v&&v.indexOf('data:image/')==0?`linear-gradient(#000a,#0007),url("${v}")`:''}catch(e){}}
+function nbPick(inp){const f=inp.files&&inp.files[0];if(!f)return;const fr=new FileReader();fr.onerror=()=>{inp.value='';toast('파일을 읽지 못했어요')};fr.onload=()=>{const im=new Image();im.onerror=()=>{inp.value='';toast('이미지를 열 수 없어요')};im.onload=()=>{const k=Math.min(1,960/im.naturalWidth),cn=document.createElement('canvas');cn.width=Math.max(1,Math.round(im.naturalWidth*k));cn.height=Math.max(1,Math.round(im.naturalHeight*k));cn.getContext('2d').drawImage(im,0,0,cn.width,cn.height);try{localStorage.setItem(NBK,cn.toDataURL('image/jpeg',.7));nbApply();toast('공지 배경을 바꿨어요')}catch(e){toast('이미지가 너무 커서 저장하지 못했어요')}inp.value=''};im.src=fr.result};fr.readAsDataURL(f)}
+function nbReset(){try{localStorage.removeItem(NBK)}catch(e){}nbApply();toast('기본 공지 배경으로 되돌렸어요')}
+function nTog(){const e=$('notice'),c=e.classList.toggle('c');$('nt').textContent=c?'📢 공지 ▼':'▲';try{localStorage.setItem(NCK,c?'1':'')}catch(x){}}
+try{if(localStorage.getItem(NCK))nTog()}catch(e){}
+nbApply();ntUpd();setInterval(ntUpd,1000);
+
+// ---------- 온라인 길드 (Firebase REST: guilds / gm / gc) ----------
+const GK='mh_guild',GRE=/^[0-9A-Za-z가-힣_ ]{2,12}$/,gq=k=>encodeURIComponent('"'+k+'"');
+var GN=0,GBUSY=0,GLV=0,GSENT=0;try{GN=+localStorage.getItem('mh_gn')||0}catch(e){}
+function gldM(){return 1+.01*Math.min(30,typeof GN=='number'&&isFinite(GN)?GN:0)}
+const gId=()=>{try{const v=localStorage.getItem(GK);return /^[a-z0-9]{8}$/.test(v||'')?v:''}catch(e){return ''}};
+const gSet=v=>{try{v?localStorage.setItem(GK,v):localStorage.removeItem(GK)}catch(e){}};
+const gCnt=n=>{GN=n;try{localStorage.setItem('mh_gn',String(n))}catch(e){}};
+const gClose=()=>'<p><button class="b" onclick="mod()">닫기</button> <button class="b" onclick="mod(\'gd\')">새로고침</button></p>';
+const gOpen=()=>$('md').style.display=='flex'&&$('mdc').dataset.k=='gd';
+const gPut=(g)=>jf(`${RANK_URL}/gm/${g}/${RID}.json`,{method:'PUT',body:JSON.stringify({n:nick(),s:bst(),k:Math.min(S.kills,9999999)})});
+async function gPush(){const g=gId();if(!g||!RANK_URL)return;try{await gPut(g)}catch(e){}}
+setInterval(gPush,30000);setTimeout(gPush,6000);
+setTimeout(async()=>{const g=gId();if(!g||!RANK_URL)return;try{const m=await jf(`${RANK_URL}/gm/${g}.json`);if(!m){gSet('');gCnt(0)}else gCnt(Object.keys(m).length)}catch(e){}},4000);
+setInterval(()=>{if(gOpen()&&gId()&&!(document.activeElement&&document.activeElement.tagName=='INPUT'))gShow(true)},15000);
+async function gShow(quiet){const c=$('mdc');if(!gOpen())return;const g=gId();
+if(!RANK_URL){c.innerHTML='<h3>🛡 길드</h3><p style="color:#ffb86b">⚠ 서버 주소(RANK_URL)가 설정되지 않았습니다.</p>'+gClose();return}
+if(!quiet)c.innerHTML='<h3>🛡 길드</h3><p>불러오는 중…</p>';
+try{if(g)await gMain(g);else await gHome()}catch(e){if(gOpen())c.innerHTML='<h3>🛡 길드</h3><p style="color:#ffb86b">⚠ 서버에 연결하지 못했습니다. 인터넷을 확인하세요.<br><small>처음 쓰는 거라면 Firebase Rules에 길드용 규칙(firebase-rules.json)을 게시해야 해요.</small></p>'+gClose()}}
+async function gHome(){const c=$('mdc'),[gs,ms]=await Promise.all([jf(`${RANK_URL}/guilds.json?orderBy=${gq('$key')}&limitToFirst=50`),jf(`${RANK_URL}/gm.json?orderBy=${gq('$key')}&limitToFirst=50`)]);if(!gOpen())return;
+const rows=Object.entries(gs||{}).map(([id,v])=>{const m=Object.values((ms&&ms[id])||{});return{id,n:v.n,cnt:m.length,k:m.reduce((a,x)=>a+(x.k||0),0),s:m.reduce((a,x)=>Math.max(a,x.s||0),0)}}).filter(x=>x.cnt>0).sort((a,b)=>b.k-a.k);
+c.innerHTML=`<h3>🛡 길드 <small>🌐 온라인</small></h3><p>길드에 들어가면 멤버 수만큼 <b>공격력·골드 +1%</b>(최대 +30%), 하루 한 번 출석 보상, 길드 채팅을 쓸 수 있어요. (최대 30명)</p><p><input id="gn" maxlength="12" placeholder="새 길드 이름 (2~12자)"> <button class="b" onclick="gCreate()">만들기 💎1,000</button></p><p><input id="gj" maxlength="8" placeholder="길드 코드 8자"> <button class="b" onclick="gJoin()">코드로 가입</button></p><h4>길드 목록 (처치 수 순)</h4>`+(rows.length?rows.map(x=>`<div class="row"><span><b>${esc(x.n)}</b><br><small>${x.cnt}/30명 · 최고 ${x.s}단계 · ${fmt(x.k)}처치</small></span><button class="b" ${x.cnt>=30?'disabled':''} onclick="gJoin('${x.id}')">가입</button></div>`).join(''):'<p>아직 길드가 없어요. 첫 길드를 만들어 보세요!</p>')+gClose()}
+async function gCreate(){if(GBUSY)return;const n=($('gn').value||'').trim().replace(/\s+/g,' ');if(!GRE.test(n))return toast('2~12자, 한글·영문·숫자·_ 만 가능합니다');if(S.gems<1000)return toast('보석이 부족합니다 (💎1,000)');GBUSY=1;
+try{const id=Array.from(crypto.getRandomValues(new Uint8Array(8)),b=>(b%36).toString(36)).join('');await jf(`${RANK_URL}/guilds/${id}.json`,{method:'PUT',body:JSON.stringify({n,o:RID,t:Date.now()})});await gPut(id);S.gems-=1000;gSet(id);gCnt(1);save();toast('🛡 길드 「'+n+'」 창설!')}catch(e){toast('길드를 만들지 못했습니다')}GBUSY=0;mod('gd')}
+async function gJoin(id){if(GBUSY)return;id=(id||($('gj').value||'')).trim().toLowerCase();if(!/^[a-z0-9]{8}$/.test(id))return toast('길드 코드는 8자입니다');GBUSY=1;
+try{const [gd,ms]=await Promise.all([jf(`${RANK_URL}/guilds/${id}.json`),jf(`${RANK_URL}/gm/${id}.json`)]);if(!gd){toast('없는 길드입니다')}else if(ms&&!ms[RID]&&Object.keys(ms).length>=30){toast('길드가 가득 찼습니다 (30명)')}else{await gPut(id);gSet(id);gCnt(Object.keys(Object.assign({},ms,{[RID]:1})).length);toast('🛡 「'+gd.n+'」 가입 완료!')}}catch(e){toast('가입하지 못했습니다')}GBUSY=0;mod('gd')}
+async function gMain(g){const c=$('mdc'),[gd,ms,ch]=await Promise.all([jf(`${RANK_URL}/guilds/${g}.json`),jf(`${RANK_URL}/gm/${g}.json`),jf(`${RANK_URL}/gc/${g}.json?orderBy=${gq('ts')}&limitToLast=20`)]);if(!gOpen())return;
+if(!gd){gSet('');gCnt(0);return gHome()}
+let mem=ms||{};if(!mem[RID]){await gPut(g);mem=Object.assign({},mem,{[RID]:{n:nick(),s:bst(),k:S.kills}})}
+const list=Object.entries(mem).map(([id,v])=>({id,n:v.n,s:v.s,k:v.k})).sort((a,b)=>b.k-a.k),n=list.length;gCnt(n);
+const msgs=Object.values(ch||{}).sort((a,b)=>a.ts-b.ts),chk=S.x.gc===DAYN();
+c.innerHTML=`<h3>🛡 ${esc(gd.n)} <small>🌐 온라인</small></h3><p>멤버 <b>${n}/30</b>명 → 공격력·골드 <b style="color:#ffd34d">+${Math.min(30,n)}%</b> · 길드 코드 <b style="user-select:text">${g}</b></p><p><button class="b" ${chk?'disabled':''} onclick="gCheck()">${chk?'📅 오늘 출석 완료 ✓':'📅 출석 💎500'}</button></p><h4>멤버</h4>`+list.map((x,i)=>`<div class="row" style="padding:8px 0"><span>${i+1}. ${x.id==gd.o?'👑 ':''}${esc(x.n)}${x.id==RID?' <small>(나)</small>':''}</span><span><small>${x.s}단계 · ${fmt(x.k)}처치</small></span></div>`).join('')+`<h4>💬 길드 채팅</h4><div id="gcl" style="max-height:150px;overflow:auto;background:#0d1230;border-radius:8px;padding:8px;font-size:15px">${msgs.length?msgs.map(m=>`<div><b>${esc(m.n)}</b>: ${esc(m.m)}</div>`).join(''):'<small>아직 대화가 없어요.</small>'}</div><p><input id="gci" maxlength="60" placeholder="메시지 (60자)" style="width:60%" onkeydown="if(event.key=='Enter')gSend()"> <button class="b" onclick="gSend()">보내기</button></p><p><button class="b" onclick="mod()">닫기</button> <button class="b" onclick="mod('gd')">새로고침</button> <button class="b" onclick="gLeave()">길드 탈퇴</button></p>`;
+const e=$('gcl');if(e)e.scrollTop=1e9}
+function gCheck(){if(!gId()||S.x.gc===DAYN())return;S.x.gc=DAYN();S.gems+=500;sfx('win');toast('📅 길드 출석 💎+500');save();hud();gShow(true)}
+async function gSend(){const g=gId(),t=($('gci')&&$('gci').value||'').trim().slice(0,60);if(!g||!t)return;if(Date.now()-GSENT<3000)return toast('잠시 후 다시 보내주세요');GSENT=Date.now();
+try{await jf(`${RANK_URL}/gc/${g}.json`,{method:'POST',body:JSON.stringify({n:nick(),m:t,ts:Date.now()})});gShow(true)}catch(e){toast('전송하지 못했습니다')}}
+async function gLeave(){if(!GLV){GLV=1;toast('한 번 더 누르면 길드를 탈퇴합니다');setTimeout(()=>GLV=0,3000);return}GLV=0;const g=gId();if(!g)return;
+try{await jf(`${RANK_URL}/gm/${g}/${RID}.json`,{method:'DELETE'});const rest=await jf(`${RANK_URL}/gm/${g}.json?shallow=true`);if(!rest||!Object.keys(rest).length){await jf(`${RANK_URL}/guilds/${g}.json`,{method:'DELETE'});await jf(`${RANK_URL}/gc/${g}.json`,{method:'DELETE'})}gSet('');gCnt(0);toast('길드를 탈퇴했습니다')}catch(e){toast('탈퇴하지 못했습니다')}mod('gd')}
+{const _m=mod;mod=function(k){_m(k);if(k=='gd')gShow()}}
 </script></body></html>
