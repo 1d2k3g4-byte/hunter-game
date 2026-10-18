@@ -1,0 +1,20 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>접속기록 관리</title>
+<style>body{font:14px system-ui;background:#111;color:#eee;margin:0;padding:16px}input,button{font:inherit;padding:8px;margin:2px;border-radius:6px;border:1px solid #444;background:#222;color:#eee}button{background:#2a6;cursor:pointer}
+table{border-collapse:collapse;width:100%;margin-top:12px}th,td{border-bottom:1px solid #333;padding:6px;text-align:left;font-size:12px;vertical-align:top}th{cursor:pointer;background:#1c1c1c;position:sticky;top:0}.w{overflow-x:auto}</style></head><body>
+<h2>접속기록 (운영자 전용)</h2>
+<div id="lg"><input id="k" placeholder="Firebase Web API Key" size="40"><br><input id="e" placeholder="이메일" value="imnass0001@gmail.com"><input id="p" type="password" placeholder="비밀번호"><button onclick="go()">로그인</button><p id="m"></p></div>
+<div id="d" hidden><p><span id="sum"></span> <input id="q" placeholder="검색 (IP, 기기, 닉네임)" oninput="draw()"> <button onclick="load()">새로고침</button> <button onclick="csv()">CSV</button></p><div class="w"><table><thead id="th"></thead><tbody id="tb"></tbody></table></div></div>
+<script>
+const DB='https://muganhunter-default-rtdb.asia-southeast1.firebasedatabase.app';let T='',R=[],sk='last',sd=-1;
+const $=i=>document.getElementById(i),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const C=[['n','닉네임'],['ip','IP'],['model','기기'],['scr','화면'],['lang','언어'],['tz','지역'],['cnt','접속수'],['first','첫 접속'],['last','최근 접속'],['id','ID']];
+const dt=t=>t?new Date(t).toLocaleString('ko-KR'):'';
+async function go(){$('m').textContent='로그인 중...';try{const r=await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key='+encodeURIComponent($('k').value.trim()),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:$('e').value,password:$('p').value,returnSecureToken:true})});const j=await r.json();if(!j.idToken)throw new Error(j.error?.message||'실패');T=j.idToken;$('lg').hidden=true;$('d').hidden=false;load()}catch(e){$('m').textContent='로그인 실패: '+e.message}}
+async function load(){const r=await fetch(DB+'/visits.json?auth='+T);if(!r.ok){alert('읽기 실패 ('+r.status+') — Rules 설정을 확인하세요');return}const o=await r.json()||{};R=Object.entries(o).map(([id,v])=>({id,...v}));draw()}
+function draw(){const q=$('q').value.toLowerCase(),a=R.filter(x=>!q||JSON.stringify(x).toLowerCase().includes(q)).sort((x,y)=>(x[sk]>y[sk]?1:-1)*sd);const day=Date.now()-864e5;
+$('sum').textContent=`총 ${R.length}명 · 24시간 내 ${R.filter(x=>x.last>day).length}명 · 고유 IP ${new Set(R.map(x=>x.ip).filter(Boolean)).size}개`;
+$('th').innerHTML='<tr>'+C.map(c=>`<th onclick="srt('${c[0]}')">${c[1]}</th>`).join('')+'</tr>';
+$('tb').innerHTML=a.map(x=>'<tr>'+C.map(c=>`<td>${esc(c[0]=='first'||c[0]=='last'?dt(x[c[0]]):x[c[0]])}</td>`).join('')+'</tr>').join('')}
+function srt(k){sd=sk==k?-sd:-1;sk=k;draw()}
+function csv(){const l=[C.map(c=>c[1]).join(',')].concat(R.map(x=>C.map(c=>'"'+String(c[0]=='first'||c[0]=='last'?dt(x[c[0]]):x[c[0]]??'').replace(/"/g,'""')+'"').join(',')));const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['﻿'+l.join('\n')],{type:'text/csv'}));a.download='visits.csv';a.click()}
+</script></body></html>

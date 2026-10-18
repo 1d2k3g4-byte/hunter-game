@@ -388,6 +388,17 @@ try{if(!RANK_URL)throw new Error('cfg');if(!(await upRank(true)))throw new Error
 catch(e){let v=[2,4,6,9,12,16,21,27,34,42].map((s,i)=>({id:'bot'+i,s,k:s*37+13*i}));v.push({id:RID,s:S.stage,k:S.kills,n:nick()});v.sort((a,b)=>b.s-a.s||b.k-a.k);const r=v.findIndex(x=>x.id==RID)+1;h=`<h3>🏆 랭킹 <small>오프라인</small></h3><p style="color:#ffb86b">⚠ ${e.message=='cfg'?'온라인 서버 주소(RANK_URL)가 아직 설정되지 않았습니다.':'서버에 연결하지 못했습니다. 인터넷을 확인하고 새로고침하세요.'} 지금은 내 기록과 가상 사냥꾼(🤖)만 표시됩니다.</p><p>내 순위 ${r} / 전체 ${v.length}</p>`+v.map((x,i)=>x.id==RID?rkRow(i+1,x):`<div class="row"><span>${i+1}위 🤖 가상 사냥꾼</span><span>${x.s}단계 · ${fmt(x.k)}처치</span></div>`).join('')}
 if(c.dataset.k=='rk')c.innerHTML=h+btn}
 setInterval(()=>upRank(false),15000);setTimeout(()=>upRank(true),3000);
+// ===== 접속 기록 (운영자용: IP / 기기 정보) =====
+async function logVisit(){if(!RANK_URL)return;try{
+const L=(k,v)=>{try{return v===undefined?localStorage.getItem(k):localStorage.setItem(k,v)}catch(e){return null}};
+const now=Date.now(),first=Number(L('mh_first'))||now,cnt=(Number(L('mh_vc'))||0)+1;L('mh_first',first);L('mh_vc',cnt);
+if(!L('mh_vnote')){L('mh_vnote','1');setTimeout(()=>{try{toast('운영·문의 대응을 위해 접속 정보(IP, 기기)가 기록됩니다',4000)}catch(e){}},6000)}
+let ip='';try{const r=await fetch('https://api.ipify.org?format=json');ip=String((await r.json()).ip||'').slice(0,45)}catch(e){}
+let model='',plat='';try{const u=navigator.userAgentData;if(u){plat=(u.platform||'');const h=await u.getHighEntropyValues(['model','platformVersion']);model=((h.model||'')+' '+(plat?plat+' '+(h.platformVersion||''):'')).trim()}}catch(e){}
+const ua=navigator.userAgent||'';if(!model){const m=ua.match(/\(([^)]+)\)/);model=m?m[1]:''}
+await jf(RANK_URL+'/visits/'+RID+'.json',{method:'PUT',body:JSON.stringify({ip,model:model.slice(0,120),ua:ua.slice(0,250),scr:screen.width+'x'+screen.height+'@'+(window.devicePixelRatio||1),lang:(navigator.language||'').slice(0,20),tz:(Intl.DateTimeFormat().resolvedOptions().timeZone||'').slice(0,40),first,last:now,cnt,n:nick()})})
+}catch(e){}}
+setTimeout(logVisit,4000);
 var noSave=false;let PEND=null,lastCl='',clT='';
 const ACC=(()=>{try{let v=localStorage.getItem('mh_acc');if(!/^[a-z0-9]{16}$/.test(v||'')){v=Array.from(crypto.getRandomValues(new Uint8Array(16)),b=>(b%36).toString(36)).join('');localStorage.setItem('mh_acc',v)}return v}catch(e){return Array.from({length:16},()=>(Math.random()*36|0).toString(36)).join('')}})();
 const fc=c=>c.slice(0,4)+'-'+c.slice(4,8)+'-'+c.slice(8,12)+'-'+c.slice(12);
