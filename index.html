@@ -396,7 +396,7 @@ async function cloudGet(){const code=($('acc').value||'').toLowerCase().replace(
 function cloudApply(){if(!PEND)return;const d=PEND.d;try{noSave=true;localStorage.setItem('mh2',JSON.stringify(d.S));localStorage.setItem('mh_acc',PEND.code);if(/^[a-z0-9]{10}$/.test(d.rid||''))localStorage.setItem('mh_rid',d.rid);if(d.nk)localStorage.setItem(NK,JSON.stringify(d.nk));location.reload()}catch(e){noSave=false;toast('적용 실패')}}
 function cpCode(){try{navigator.clipboard.writeText(ACC).then(()=>toast('복사됨'),()=>toast('길게 눌러 직접 복사하세요'))}catch(e){toast('길게 눌러 직접 복사하세요')}}
 function cloudHtml(){if(PEND){const q=PEND.d.S;return `<h3>☁ 덮어쓰기 확인</h3><p>클라우드: <b>${Number(q.stage)||1}단계</b> · ${fmt(Number(q.kills)||0)}처치<br>이 기기: <b>${S.stage}단계</b> · ${fmt(S.kills)}처치<br><span style="color:#ffb86b">이 기기의 진행이 클라우드 데이터로 바뀌고, 이 기기는 그 계정으로 이어집니다.</span></p><button class="b" onclick="cloudApply()">덮어쓰기</button> <button class="b" onclick="PEND=null;mod('set')">취소</button>`}
-return `<h3>☁ 클라우드 저장</h3><p>내 계정 코드<br><b style="user-select:text;font-size:20px">${fc(ACC)}</b> <button class="b" onclick="cpCode()">복사</button></p><p><input id="acc" placeholder="다른 기기의 계정 코드"> <button class="b" onclick="cloudGet()">불러오기</button></p><small>${RANK_URL?(clT?'마지막 클라우드 저장 '+clT:'저장 대기 중'):'⚠ 서버 주소(RANK_URL) 미설정 — 클라우드 저장 꺼짐'}<br>코드는 비밀번호처럼 보관하세요. 두 기기에서 동시에 플레이하면 나중에 저장한 쪽이 남습니다.</small>`}
+return `<h3>☁ 클라우드 저장</h3><p>내 계정 코드<br><b id="accv" onclick="accTog()" style="cursor:pointer;user-select:none;font-size:20px">••••-••••-••••-••••</b> <small>(눌러서 보기)</small> <button class="b" onclick="cpCode()">복사</button></p><p><input id="acc" placeholder="다른 기기의 계정 코드"> <button class="b" onclick="cloudGet()">불러오기</button></p><small>${RANK_URL?(clT?'마지막 클라우드 저장 '+clT:'저장 대기 중'):'⚠ 서버 주소(RANK_URL) 미설정 — 클라우드 저장 꺼짐'}<br>코드는 비밀번호처럼 보관하세요. 두 기기에서 동시에 플레이하면 나중에 저장한 쪽이 남습니다.</small>`}
 setInterval(()=>cloudUp(false),30000);setTimeout(cloudBoot,5000);document.addEventListener('visibilitychange',()=>{if(document.hidden){upRank(false);cloudUp(false)}});
 function mod(k){ainit();let m=$('md'),c=$('mdc');c.dataset.k=k||'';if(!k){m.style.display='none';return}sfx('click');m.style.display='flex';
 if(k=='cp')c.innerHTML='<h3>🎟 쿠폰</h3><input id="ci" placeholder="코드 입력"> <button class="b" onclick="coupon()">확인</button> <button class="b" onclick="mod()">닫기</button>';
@@ -603,4 +603,6 @@ try{await jf(`${RANK_URL}/gm/${g}/${RID}.json`,{method:'DELETE'});const rest=awa
 
 // 같은 계정 코드를 폰/PC가 같이 쓸 때: 시작 시 클라우드가 더 최신이면 옛날 데이터로 덮어쓰지 않고 먼저 물어봄
 async function cloudBoot(){try{if(!RANK_URL||noSave)return;const r=await jf(`${RANK_URL}/saves/${ACC}.json`);if(r&&typeof r.d=='string'){const d=JSON.parse(r.d);if(d&&d.S&&d.S.v==2&&Number(d.S.last)>LAST0+9e4){PEND={code:ACC,d};mod('set');toast('☁ 다른 기기에 더 최신 저장이 있어요',3500);return}}}catch(e){}finally{CLOK=1;cloudUp(true)}}
+var ACCT=0;
+function accTog(){const e=$('accv');if(!e)return;if(e.dataset.s=='1'){e.dataset.s='';e.textContent='••••-••••-••••-••••'}else{e.dataset.s='1';e.textContent=fc(ACC);clearTimeout(ACCT);ACCT=setTimeout(()=>{const x=$('accv');if(x&&x.dataset.s=='1')accTog()},10000)}}
 </script></body></html>
